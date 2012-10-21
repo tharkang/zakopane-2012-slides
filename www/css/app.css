@@ -1,0 +1,31 @@
+svg {
+	font: 10px sans-serif;
+	fill: gray;
+}
+
+.axis path, .axis line {
+	fill: none;
+	stroke: gray;
+	shape-rendering: crispEdges;
+}
+
+.line {
+	fill: none;
+	stroke: steelblue;
+	stroke-width: 1.5px;
+}
+
+.dot {
+	fill: white;
+	stroke: steelblue;
+	stroke-width: 1.5px;
+}
+
+rect.rr {
+	fill: white;
+}
+
+rect.rr.dot {
+	fill: black;
+	stroke: none;
+}

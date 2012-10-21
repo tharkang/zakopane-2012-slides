@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+    <head>
+				<meta charset="utf-8">
+        <script data-main="js/app" src="js/lib/require.js"></script>
+				<link rel="stylesheet" href="css/app.css">
+				<link rel="stylesheet" href="css/nv.d3.css">
+				<link rel="stylesheet" href="js/lib/reveal/css/main.css">
+				<link rel="stylesheet" href="js/lib/reveal/css/theme/default.css" id="theme">
+				<link href='http://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+				<script type="text/javascript" src="js/MathJax/MathJax.js?config=TeX-AMS_HTML-full"></script>
+    </head>
+    <body>
+				<div class="reveal">
+					<div class="state-background"></div>
+
+					<div class="slides">
+						<section>
+							<h2><br/><br/>Metody ilościowe w analizie dynamiki konwersacji</h2>
+							<p style="text-align: right;">Marcin Kurczych</p>
+						</section>
+						<section>
+							<h3>Zarys</h3>
+
+							<ul>
+								<li>Projekt w składzie Joanna Rączaszek-Leonardi, Franciszek Rakowski,. Marcin Kurczych, Alicja Radkowska, Dariusz Plewczyński.</li>
+								<li>24 rozmowy nagrane, połowa na temat wzbudzający emocje, połowa na neutralny.</li>
+								<li>Po zakończeniu konwersacji każda osoba wypełniała kwestionariusz.</li>
+								<li>Cel: odnaleźć zmienne charakteryzujące rozmowę, które będzie można powiązać z zaobserwowanymi różnicami</li>
+							</ul>
+						</section>
+						<section>
+							<h3>Kwestionariusz</h3>
+							<ul>
+								<li>Przykłady miar kwestionariuszowych:<ul>
+									<li>Czy rozmowa była rozwlekła?</li>
+									<li>Czy rozmowa była dynamiczna?</li>
+									<li>Czy czułaś/eś się zrozumiana/y przez rozmówcę?</li>
+									<li>Czy przewodziłaś/eś rozmowie?</li>
+								</ul>
+								<li>Pytania addytywne i różnicowe.</li>
+								<li>Składowe główne.</li>
+							</ul>
+						</section>
+						<section>
+							<h3>Recurrence Quantification Analysis</h3>
+							<ul>
+								<li>Metoda pozwalająca na analizę złożonych systemów dynamicznych.</li>
+								<li>Skupia się na powtórzeniach w zachowaniu.</li>
+								<li>Czas dyskretny.</li>
+								<li>Na przestrzeni stanów ustalamy odległość.</li>
+								<li>Recurrence Plot - macierz mająca na pozycji \((t_1, t_2)\) wartość 1, jeśli odległość stanów w momentach \(t_1\) i \(t_2\) jest mała, 0 w przeciwnym wypadku.</li>
+							</ul>
+						</section>
+						<section id="rrplot">
+							<h3>RQA - przykład</h3>
+							<div style="width: 600px; height: 500px;"><svg  style="width: 600px; height: 500px;"></svg></div>
+							<p></p>
+							<div class="fragment"></div>
+							<div class="fragment"></div>
+							<div class="fragment"></div>
+							<div class="fragment"></div>
+							<div class="fragment"></div>
+						</section>
+						<section>
+							<h3>RQA - miary</h3>
+							<ul>
+								<li>\(\mathcal{l}(k)\): liczba linii długości \(k\)</li>
+								<li>\(\mathcal{p}(k) = \sum_{i=1}^{k}\mathcal{l}(i)\): liczba punktów na liniach nie krótszych niż \(k\)</li>
+								<li>\(RR = \frac{\mathcal{p}(1)}{n^2} \): część zaczerniona</li>
+								<li>\(DET = \frac{\mathcal{p}(l_{min})}{\mathcal{p}(1)} \): jaka część punktów na długich liniach</li>
+								<li>\(L = \frac{\sum_{k} \mathcal{l}(k)k}{\sum_{k} \mathcal{l}(k)}\): średnia długość linii</li>
+								<li>\(LENTR = - \sum_k p(k) \log p(k)\), gdzie \(p(k) = \frac{\mathcal{l}(k)}{\sum_{k} \mathcal{l}(k)}\): entropia rozkładu linii</li>
+							</ul>
+						</section>
+						<section>
+							<h3>Współczynnik entropii</h3>
+							<ul>
+								<li>Entropię względną możemy określić wzorem \(H(X \mid Y) = H((X, Y)) - H(Y)\).</li>
+								<li>Jeśli \(X\) i \(Y\) niezależne, to \(H(X \mid Y) = H(X)\), jeśli \(X\) deterministycznie wyznaczone przez \(Y\), \(H(X \mid Y) = 0\).</li>
+								<li>W procesach stochastycznych mamy \(H(X_t) \geqslant H(X_t \mid X_{t-1}) \geqslant H(X_t \mid (X_{t-1}, X_{t-2})) \geqslant ... \).</li>
+								<li>Ciąg taki zbiega to pewnej granicy. Zwana jest ona współczynnikiem entropii.</li>
+								<li>W przypadku skończonych próbek niemożliwe jest wyznaczenie go w prosty sposób.</li>
+							</ul>
+						</section>
+						<section>
+							<h3>Kodowanie</h3>
+							<p>Podstawowe 4 zdarzenia (mówi jedna osoba, mówi druga, mówią obie, cisza) zamieniano na ciąg typu:</p>
+							<ul>
+								<li>Zdarzenia, z czasem,</li>
+								<li>zdarzenia, bez czasu,</li>
+								<li>przedziały, co pół sekundy.</li>
+							</ul>
+							<p>Dodatkowo użyliśmy modelu z 6 rodzajami stanów, rozbijając ciszę i sprzeczki na 2 typy, w zależności po czyjej wypowiedzi nastąpiły.</p>
+
+						</section>
+						<section id="g1">
+							<h3>Entropia w rozmowach</h3>
+							<div style="width: 600px; height: 500px;"><svg style="width: 100%; height: 100%"></svg></div>
+						</section>
+
+						<section>
+							<h3>Analiza częstotliwości</h3>
+							<img src="images/spect.png" style="width: 560px; height: 400px;"/>
+						</section>
+
+						<section id="g3">
+							<h3>Częstotliwości</h3>
+							<div style="width: 600px; height: 500px;"><svg style="width: 100%; height: 100%"></svg></div>
+						</section>
+
+						<section>
+							<h3>Korelacje</h3>
+							<p>W modelu zdarzeniowym:</p>
+							<ul>
+								<li>entropia bezwzględna z rozwlekłością: 0.68</li>
+								<li>RR4 z rozwlekłością: -0.66</li>
+							</ul>
+							<p>W analizie częstotliwości bazowej:</p>
+							<ul>
+								<li>DET z dynamicznością: -0.71</li>
+								<li>DET pochodnej z dynamicznością: 0.66</li>
+								<li>DET pochodnej z naturalnością: 0.64</li>
+							</ul>
+							<p>Podane korelacje Spearmana, P &lt; 0.01</p>
+						</section>
+
+						<section id="evolution">
+							<h3>Stacjonarność zmiennych</h3>
+							<div style="width: 600px; height: 500px;"><svg  style="width: 600px; height: 500px;"></svg></div>
+							<div class="fragment"></div>
+							<div class="fragment"></div>
+							<div class="fragment"></div>
+						</section>
+
+						<section>
+							<h3>Możliwości</h3>
+							<ul>
+								<li>Rozdzielenie sygnału dźwiękowego.</li>
+								<li>Pobieranie danych ciągłych (fizjologiczne, regularne ocenianie).</li>
+								<li>Wpływanie na rozmowę (przestraszenie rozmówców?).</li>
+								<li>Rozwiązywanie przez pary zadania.</li>
+							</ul>
+
+						</section>
+
+					</div>
+				</div>
+    </body>
+</html>
