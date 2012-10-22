@@ -70,7 +70,11 @@ export function RrPlot() {
 	var xAxis;
 	var yAxis;
 	var zoomBh;
-	var png;
+	var emb = 1;
+	var sel = null;
+	var rsize = 50;
+	var width, height;
+	var scale;
 
 	margin = {top: 20, right: 10, bottom: 10, left: 30};
 
@@ -80,16 +84,23 @@ export function RrPlot() {
 	xAxis = d3.svg.axis().scale(x).orient("top");
 	yAxis = d3.svg.axis().scale(y).orient("left");
 
-	function getPng(emb: number, sel) {
-		var z = 6;
+	function getPng(bx, by, z) {
 		var canvas: any = document.createElement("canvas");
-		canvas.height = s1.length*z;
-		canvas.width = s2.length*z;
+		canvas.height = rsize;
+		canvas.width = rsize;
+
 		var context = canvas.getContext("2d");
-		for(var x = 0; x < s1.length; ++x) {
-			for(var y = 0; y < s2.length; ++y) {
-				if(x >= emb-1 && y >= emb-1 && _.chain().range(emb).all(i => s1[x - i] == s2[y - i]).value()) {
-					if(sel && sel.length == emb && _.chain().range(emb).all(i => (s1[x - i] == sel[emb - 1 - i])).value()) {
+		function xx(x) {
+			return Math.floor((bx + x) / z);
+		}
+		function yy(x) {
+			return Math.floor((by + y) / z);
+		}
+
+		for(var x = 0; x < rsize && xx(x) < s1.length; ++x) {
+			for(var y = 0; y < rsize && yy(y) < s2.length; ++y) {
+				if(xx(x) >= emb-1 && yy(y) >= emb-1 && _.chain().range(emb).all(i => s1[xx(x) - i] == s2[yy(y) - i]).value()) {
+					if(sel && sel.length == emb && _.chain().range(emb).all(i => (s1[xx(x) - i] == sel[emb - 1 - i])).value()) {
 						context.setFillColor("red");
 					} else {
 						context.setFillColor("black");
@@ -97,7 +108,7 @@ export function RrPlot() {
 				} else {
 					context.setFillColor("white");
 				}
-				context.fillRect(z*x, z*y, z, z);
+				context.fillRect(x, y, 1, 1);
 			}
 		}
 		return canvas.toDataURL();
@@ -117,15 +128,34 @@ export function RrPlot() {
 
 		svg.select(".x.axis").call(xAxis);
 		svg.select(".y.axis").call(yAxis);
-		svg.select("g.rrplot").attr("transform", "translate(" + t[0] + "," + t[1] + ") scale(" + sc + ")");
+		svg.select("g.rrplot").attr("transform", "translate(" + t[0] + "," + t[1] + ")");
+		var sel = svg.select("g.rrplot").selectAll("image").data(squares(), function(d) { return d.x + ";" + d.y;});
+		sel.enter().append("image").attr("height", rsize).attr("width", rsize).attr("transform", function(d) { return "translate(" + d.x*rsize + "," + d.y*rsize + ")"; }).attr("xlink:href", function(d){return getPng(d.x*rsize, d.y*rsize, sc*30);});
+		sel.exit().remove();
+		if(sc != scale) {
+			scale = sc;
+			svg.selectAll("g.rrplot image").attr("xlink:href", function(d){return getPng(d.x*rsize, d.y*rsize, scale*30);});
+		}
 
+	}
+
+	function squares() {
+		var ret = [];
+		var t = zoomBh.translate();
+
+		for(var xd = 0; xd*rsize < width + rsize; ++xd) {
+			for(var yd = 0; yd*rsize < height + rsize; ++yd) {
+				ret.push({ x: Math.floor(-t[0] / rsize) + xd, y: Math.floor(-t[1] / rsize) + yd });
+			}
+		}
+		return ret;
 	}
 
 	function chart(selection) {
 		selection.each(function() {
 			svg = d3.select(this);
-			var width = parseInt(svg.style("width")) - margin.left - margin.right;
-			var height = parseInt(svg.style("height")) - margin.top - margin.bottom;
+			width = parseInt(svg.style("width")) - margin.left - margin.right;
+			height = parseInt(svg.style("height")) - margin.top - margin.bottom;
 
 			x.domain([0, width/30]).range([0, width]);
 			y.domain([0, height/30]).range([0, height]);
@@ -153,20 +183,23 @@ export function RrPlot() {
 				.call(xAxis);
 
 			svg.append("g").attr("clip-path", "url(#dupa)").append("g").attr("class", "rrplot");
-			svg.select("g.rrplot").append("image").attr("height", 30*s1.length).attr("width", 30*s2.length).attr("xlink:href", png);
+			//svg.select("g.rrplot").append("image").attr("height", 30*s1.length).attr("width", 30*s2.length).attr("xlink:href", png);
+
+			scale = zoomBh.scale();
+			svg.select("g.rrplot").selectAll("image").data(squares()).enter().append("image").attr("height", rsize).attr("width", rsize).attr("transform", function(d) { return "translate(" + d.x*rsize + "," + d.y*rsize + ")"; }).attr("xlink:href", function(d){return getPng(d.x*rsize, d.y*rsize, scale*30);});
 
 		});
 		var chart_: any = chart;
-		chart_.update = function() { svg.select("g.rrplot image").attr("height", 30*s1.length).attr("width", 30*s2.length).attr("xlink:href", png); };
+		chart_.update = function() { svg.selectAll("g.rrplot image").attr("xlink:href", function(d){return getPng(d.x*rsize, d.y*rsize, scale * 30);}); };
 	}
 
 	var chart_: any = chart;
 
 	chart_.update = function() {};
 
-	chart_.rrify = function(embedding: number, sel?) {
-		var emb = (arguments.length > 0 ? embedding : 1);
-		png = getPng(embedding, sel);
+	chart_.rrify = function(embedding: number, s?) {
+		emb = (arguments.length > 0 ? embedding : 1);
+		sel = s;
 	}
 
 
